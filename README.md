@@ -15,6 +15,7 @@ This repository serves as a centralized platform for sharing knowledge among our
 
 | Title | Speaker | Date | Resources |
 | ----- | ------- | ---- | --------- |
+| **What is software test?** | [Mehrdokht Gohardehi](https://github.com/mehrdokhtgohar) | 2022 Oct 27 | - |
 | **Deep Dive into SVG** | [Mohsen Madani](https://github.com/moh3n9595) | - | - |
 
 ## 📃 License
