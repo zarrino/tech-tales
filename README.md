@@ -9,7 +9,7 @@
 
 ## 📖 About
 
-This repository serves as a centralized platform for sharing knowledge among our team members. It is designed to facilitate collaboration and knowledge exchange across different roles and departments within our organization. the purpose of this repository is to collect, organize, and distribute new technical resources, best practices, and other valuable content. It is intended to be a comprehensive resource for all members of our team, fostering a culture of continuous learning and improvement.
+This repository serves as a centralized platform for sharing knowledge among our team members. It is designed to facilitate collaboration and knowledge exchange across different roles and departments within our organization. The purpose of this repository is to collect, organize, and distribute new technical resources, best practices, and other valuable content. It is intended to be a comprehensive resource for all members of our team, fostering a culture of continuous learning and improvement.
 
 ## 🔍 Tales
 
