@@ -13,11 +13,12 @@ This repository serves as a centralized platform for sharing knowledge among our
 
 ## 🔍 Tales
 
-|  | Title | Speaker | Date | Resources |
-| --- | ----- | ------- | ---- | --------- |
-| 1 | **What is software test?** | [Mehrdokht Gohardehi](https://github.com/mehrdokhtgohar) | 2023 Oct 27 | [Slides](https://github.com/zarrino/tech-tales/blob/main/src/what-is-software-test/content.pdf) |
-| 2 | **Deep Dive into SVG** | [Mohsen Madani](https://github.com/moh3n9595) | 2024 Feb 4 | [Slides](https://github.com/zarrino/tech-tales/blob/main/src/deep-dive-into-svg/content.pdf) |
-| 3 | **De'Casteljau's Algorithm** | [Arshia Moghaddam](https://github.com/ars2062) | 2024 Mar 2 | [Slides](https://github.com/zarrino/tech-tales/blob/main/src/De'Casteljau's%20Algorithm/content.pdf)
+|  | Title                        | Speaker                                                  | Date        | Resources |
+| --- |------------------------------|----------------------------------------------------------|-------------| --------- |
+| 1 | **What is software test?**   | [Mehrdokht Gohardehi](https://github.com/mehrdokhtgohar) | 2023 Oct 27 | [Slides](https://github.com/zarrino/tech-tales/blob/main/src/what-is-software-test/content.pdf) |
+| 2 | **Deep Dive into SVG**       | [Mohsen Madani](https://github.com/moh3n9595)            | 2024 Feb 4  | [Slides](https://github.com/zarrino/tech-tales/blob/main/src/deep-dive-into-svg/content.pdf) |
+| 3 | **De'Casteljau's Algorithm** | [Arshia Moghaddam](https://github.com/ars2062)           | 2024 Mar 2  | [Slides](https://github.com/zarrino/tech-tales/blob/main/src/De'Casteljau's%20Algorithm/content.pdf)
+| 3 | **Isolation Levels**         | [Kiana Akbari](https://github.com/kianaakbari)               | 2024 Dec 2  | [Slides](https://github.com/zarrino/tech-tales/blob/main/src/isolation-levels/content.pdf)
 
 ## 📃 License
 
