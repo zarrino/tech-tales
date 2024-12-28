@@ -19,6 +19,7 @@ This repository serves as a centralized platform for sharing knowledge among our
 | 2 | **Deep Dive into SVG**       | [Mohsen Madani](https://github.com/moh3n9595)            | 2024 Feb 4  | [Slides](https://github.com/zarrino/tech-tales/blob/main/src/deep-dive-into-svg/content.pdf) |
 | 3 | **De'Casteljau's Algorithm** | [Arshia Moghaddam](https://github.com/ars2062)           | 2024 Mar 2  | [Slides](https://github.com/zarrino/tech-tales/blob/main/src/De'Casteljau's%20Algorithm/content.pdf)
 | 4 | **Isolation Levels**         | [Kiana Akbari](https://github.com/kianaakbari)               | 2024 Dec 2  | [Slides](https://github.com/zarrino/tech-tales/blob/main/src/isolation-levels/content.pdf)
+| 5 | **Automating Workflows for API Testing**         | [Mohsen Madani](https://github.com/moh3n9595)               | 2024 Dec 20  | [Slides](https://github.com/zarrino/tech-tales/blob/main/src/automating-workflows-for-api-testing/content.pdf)
 
 ## 📃 License
 
