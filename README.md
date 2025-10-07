@@ -21,6 +21,7 @@ This repository serves as a centralized platform for sharing knowledge among our
 | 4 | **Isolation Levels**         | [Kiana Akbari](https://github.com/kianaakbari)               | 2024 Dec 2  | [Slides](https://github.com/zarrino/tech-tales/blob/main/src/isolation-levels/content.pdf)
 | 5 | **Automating Workflows for API Testing**         | [Mohsen Madani](https://github.com/moh3n9595)               | 2024 Dec 20  | [Slides](https://github.com/zarrino/tech-tales/blob/main/src/automating-workflows-for-api-testing/content.pdf)
 | 6 | **Consistency in Theming System through Style Dictionary**         | [Mohsen Madani](https://github.com/moh3n9595)               | 2025 Apr 14  | [Slides](https://github.com/zarrino/tech-tales/blob/main/src/consistency-in-theming-system-through-style-dictionary/content.pdf)
+| 7 | **The Redesigned Calendar**         | [Mohsen Madani](https://github.com/moh3n9595)               | 2025 Apr 7  | [Slides](https://github.com/zarrino/tech-tales/blob/main/src/the-redesigned-calendar/content.pdf)
 
 ## 📃 License
 
