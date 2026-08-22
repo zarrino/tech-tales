@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Instagram Stories Cube — working demo</title>
+<style>
+  :root {
+    --bg: #0E0B16;
+    --panel: #191426;
+    --white: #F0EEF6;
+    --mut: #9691A8;
+    --pink: #DD2A7B;
+    --orange: #F58529;
+    --mint: #02C39A;
+    --blue: #8C96FF;
+    --w: min(390px, 92vw);          /* face width — drives ALL the cube math */
+    --h: calc(var(--w) * 16 / 9);
+    --pivot: calc(var(--w) / -2);   /* rotation-origin depth (slider-controlled) */
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace;
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    gap: 18px;
+    padding: 24px 12px;
+    overflow-x: hidden;
+    touch-action: pan-y;             /* browser handles vertical, we own horizontal */
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  h1 { font-size: 15px; font-weight: 600; letter-spacing: .12em; color: var(--mut); }
+  h1 b { color: var(--white); }
+
+  /* ---------- the three lines that make it 3D ---------- */
+  .viewport {
+    width: var(--w);
+    height: var(--h);
+    max-height: 74dvh;
+    perspective: 1000px;             /* 1 — the viewer's distance */
+    border-radius: 14px;
+    overflow: hidden;
+    background: #000;
+    cursor: grab;
+  }
+  .viewport:active { cursor: grabbing; }
+  .cube {
+    width: 100%; height: 100%;
+    position: relative;
+    transform-style: preserve-3d;    /* 2 — children keep their depth */
+    transform-origin: 50% 50% var(--pivot);          /* 3 — pivot at cube center */
+    transform: rotateY(var(--angle, 0deg));
+    will-change: transform;
+  }
+  .face {
+    position: absolute; inset: 0;
+    transform-origin: 50% 50% var(--pivot);          /* same pivot as the cube */
+    backface-visibility: hidden;
+    display: flex; flex-direction: column;
+    padding: 14px;
+    overflow: hidden;
+  }
+  .face[data-slot="prev"]    { transform: rotateY(-90deg); }
+  .face[data-slot="current"] { transform: rotateY(0deg);   }
+  .face[data-slot="next"]    { transform: rotateY(90deg);  }
+
+  /* ---------- fake story content (chrome loads instantly) ---------- */
+  .segments { display: flex; gap: 5px; }
+  .segments i { flex: 1; height: 3px; border-radius: 2px; background: rgba(255,255,255,.35); }
+  .segments i.on { background: rgba(255,255,255,.95); }
+  .meta { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+  .avatar { width: 34px; height: 34px; border-radius: 50%;
+    background: rgba(255,255,255,.95); display: grid; place-items: center; }
+  .avatar i { width: 24px; height: 24px; border-radius: 50%; display: block; }
+  .name { height: 12px; width: 110px; border-radius: 6px; background: rgba(255,255,255,.75); }
+  .big {
+    flex: 1; display: grid; place-items: center;
+    font-size: clamp(90px, 34vw, 150px); font-weight: 800;
+    color: rgba(255,255,255,.95);
+    text-shadow: 0 8px 40px rgba(0,0,0,.25);
+  }
+  .cap { align-self: center; margin-bottom: 26px; font-size: 12px;
+    letter-spacing: .3em; color: rgba(255,255,255,.7); }
+
+  /* ---------- live math HUD — watch the deck's formulas run ---------- */
+  .hud {
+    width: var(--w);
+    background: var(--panel);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 12px;
+    line-height: 1.9;
+    color: var(--mut);
+  }
+  .hud b { color: var(--white); font-weight: 600; }
+  .hud .v { display: inline-block; min-width: 76px; }
+  .hud .o { color: var(--orange); } .hud .p { color: var(--pink); }
+  .hud .m { color: var(--mint); }  .hud .b2 { color: var(--blue); }
+  .hud .legend {
+    display: block; margin-top: 8px; padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,.08);
+    font-size: 10.5px; line-height: 1.6; color: var(--mut);
+  }
+  .hint { font-size: 11px; color: var(--mut); letter-spacing: .05em; }
+
+  .side { display: grid; gap: 14px; width: var(--w); }
+
+  .ctrls {
+    background: var(--panel);
+    border-radius: 12px;
+    padding: 14px 16px 6px;
+  }
+  .ctrls h2 { font-size: 12px; letter-spacing: .1em; color: var(--white); margin-bottom: 10px; }
+  .ctrl { margin-bottom: 12px; }
+  .ctrl .row { display: flex; justify-content: space-between; font-size: 12px; }
+  .ctrl .row label { color: var(--white); font-weight: 600; }
+  .ctrl .row output { color: var(--mint); }
+  .ctrl input[type=range] {
+    width: 100%; margin: 6px 0 3px; accent-color: var(--pink);
+    height: 22px; cursor: pointer;
+  }
+  .ctrl p { font-size: 10.5px; line-height: 1.5; color: var(--mut); }
+  .ctrl p em { color: var(--orange); font-style: normal; }
+  .ctrls button {
+    font: inherit; font-size: 11px; letter-spacing: .06em;
+    color: var(--white); background: none;
+    border: 1px solid rgba(255,255,255,.25); border-radius: 8px;
+    padding: 6px 12px; margin: 2px 0 10px; cursor: pointer;
+  }
+  .ctrls button:hover { border-color: var(--pink); color: var(--pink); }
+
+  @media (min-width: 960px) {
+    body { grid-template-columns: auto minmax(340px, 420px); column-gap: 34px;
+           align-content: center; justify-content: center; }
+    h1 { grid-column: 1 / -1; text-align: center; }
+    .side { width: 100%; align-content: start; }
+    .viewport { align-self: start; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cube { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+  <h1>STORIES CUBE — <b>drag, flick, or use ← →</b></h1>
+
+  <div class="viewport">
+    <div class="cube" id="cube">
+      <section class="face" data-slot="prev"></section>
+      <section class="face" data-slot="current"></section>
+      <section class="face" data-slot="next"></section>
+    </div>
+  </div>
+
+  <div class="side">
+    <div class="hud" id="hud"></div>
+
+    <div class="ctrls">
+      <h2>PLAY WITH THE MATH</h2>
+
+      <div class="ctrl">
+        <div class="row"><label for="cA">rotation θ</label><output id="vA">0°</output></div>
+        <input type="range" id="cA" min="-90" max="90" step="1" value="0">
+        <p>Freeze the turn anywhere. Slide to ±45° and watch <em>seam z</em> peak — then keep going and watch it come back down.</p>
+      </div>
+
+      <div class="ctrl">
+        <div class="row"><label for="cD">perspective (d)</label><output id="vD">1000px</output></div>
+        <input type="range" id="cD" min="200" max="3000" step="50" value="1000">
+        <p>Your distance from the glass. <em>Small = you stand close</em> → wild depth. Large → nearly flat. Watch <em>scale</em> in the HUD react.</p>
+      </div>
+
+      <div class="ctrl">
+        <div class="row"><label for="cO">perspective-origin x</label><output id="vO">50%</output></div>
+        <input type="range" id="cO" min="0" max="100" step="1" value="50">
+        <p>Where your eye sits horizontally. Off-center = looking at the cube from the side.</p>
+      </div>
+
+      <div class="ctrl">
+        <div class="row"><label for="cP">pivot depth</label><output id="vP">−0.50·w</output></div>
+        <input type="range" id="cP" min="5" max="100" step="1" value="50">
+        <p><em>50 = −w/2 = a perfect cube.</em> Move it mid-turn and watch the seam tear open or the faces overlap — the proof that −w/2 is geometry, not taste.</p>
+      </div>
+
+      <button id="cReset">reset to Instagram defaults</button>
+    </div>
+
+    <p class="hint">only 3 panels exist — open devtools and watch them recycle</p>
+  </div>
+
+<script>
+/* ============================================================
+   DATA — as many stories as you like; the DOM never grows
+   ============================================================ */
+const GRADS = [
+  ["#F58529", "#DD2A7B"], ["#DD2A7B", "#8134AF"], ["#515BD4", "#8134AF"],
+  ["#02C39A", "#028090"], ["#F58529", "#8134AF"], ["#DD2A7B", "#515BD4"],
+  ["#8134AF", "#02C39A"], ["#F9E795", "#F96167"],
+];
+const stories = Array.from({ length: 8 }, (_, i) => ({
+  id: i + 1,
+  grad: GRADS[i % GRADS.length],
+}));
+const N = stories.length;
+
+/* ============================================================
+   ENGINE — identical to the deck, slide "The complete engine"
+   ============================================================ */
+const cube  = document.getElementById("cube");
+const hud   = document.getElementById("hud");
+const faces = {
+  prev:    cube.querySelector('[data-slot="prev"]'),
+  current: cube.querySelector('[data-slot="current"]'),
+  next:    cube.querySelector('[data-slot="next"]'),
+};
+const W = () => cube.parentElement.clientWidth;   // face width w
+
+let index = 0;          // which story is on the front face
+let deg = 0;            // --angle, the ONE variable that moves the cube
+let startX = 0, lastX = 0, lastT = 0, vx = 0, dragging = false;
+
+let D = 1000;           // perspective distance — slider-controlled
+
+const setAngle = (v) => {
+  deg = v;
+  cube.style.setProperty("--angle", v + "deg");
+  paintHUD();
+};
+
+/* ============================================================
+   CONTROLS — change the math, watch the cube obey
+   ============================================================ */
+const $ = (id) => document.getElementById(id);
+const viewport = cube.parentElement;
+
+$("cA").addEventListener("input", (e) => {
+  cube.style.transition = "none";          // slider = freeze-frame inspection
+  setAngle(+e.target.value);
+});
+$("cD").addEventListener("input", (e) => {
+  D = +e.target.value;
+  viewport.style.perspective = D + "px";
+  $("vD").textContent = D + "px";
+  paintHUD();
+});
+$("cO").addEventListener("input", (e) => {
+  viewport.style.perspectiveOrigin = e.target.value + "% 50%";
+  $("vO").textContent = e.target.value + "%";
+});
+$("cP").addEventListener("input", (e) => {
+  const p = +e.target.value / 100;         // fraction of w behind the glass
+  document.documentElement.style.setProperty("--pivot", `calc(var(--w) * ${-p})`);
+  $("vP").textContent = "−" + p.toFixed(2) + "·w";
+});
+$("cReset").addEventListener("click", () => {
+  $("cA").value = 0;  $("cD").value = 1000; $("cO").value = 50; $("cP").value = 50;
+  ["cA","cD","cO","cP"].forEach(id => $(id).dispatchEvent(new Event("input")));
+  cube.style.transition = "";
+});
+
+/* ---------- fill one face with a story (chrome instant, media async) */
+function fillFace(face, story) {
+  if (!story) { face.innerHTML = ""; face.style.background = "#000"; return; }
+  face.style.background = `linear-gradient(180deg, ${story.grad[0]}, ${story.grad[1]})`;
+  face.innerHTML = `
+    <div class="segments">${stories.map((_, i) =>
+      `<i class="${i <= (story.id - 1) % 5 && i < 5 ? "on" : ""}" ${i >= 5 ? 'style="display:none"' : ""}></i>`).join("")}
+    </div>
+    <div class="meta">
+      <span class="avatar"><i style="background:${story.grad[1]}"></i></span>
+      <span class="name"></span>
+    </div>
+    <div class="big">${story.id}</div>
+    <div class="cap">STORY</div>`;
+}
+
+/* ---------- the invariant: after every settle, window = [i-1, i, i+1], angle = 0 */
+function renderWindow() {
+  fillFace(faces.prev,    stories[index - 1]);
+  fillFace(faces.current, stories[index]);
+  fillFace(faces.next,    stories[index + 1]);
+}
+
+/* ---------- gesture: θ = 90° · Δx / w, clamped, rubber-banded */
+addEventListener("pointerdown", (e) => {
+  dragging = true;
+  startX = lastX = e.clientX;
+  lastT = e.timeStamp; vx = 0;
+  cube.style.transition = "none";        // the finger IS the easing curve
+});
+
+addEventListener("pointermove", (e) => {
+  if (!dragging) return;
+  vx = (e.clientX - lastX) / (e.timeStamp - lastT || 1);   // px per ms
+  lastX = e.clientX; lastT = e.timeStamp;
+  let d = ((e.clientX - startX) / W()) * 90;               // the linear map
+                                                           // drag LEFT → θ<0 → NEXT
+  d = Math.max(-90, Math.min(90, d));                      // guard 1: clamp
+  if ((index === 0 && d < 0) || (index === N - 1 && d > 0))
+    d *= 0.25;                                             // guard 2: rubber-band
+  setAngle(d);
+});
+
+/* ---------- release: commit if far OR fast; duration ∝ remaining angle */
+addEventListener("pointerup", release);
+addEventListener("pointercancel", release);
+function release(e) {
+  if (!dragging) return;
+  dragging = false;
+  const far   = Math.abs(deg) > 45;
+  const fast  = Math.abs(vx) > 0.3;
+  const fwd   = deg < 0, bwd = deg > 0;
+  const legal = (fwd && index < N - 1) || (bwd && index > 0);
+  const commit = (far || fast) && legal;
+  const target = commit ? Math.sign(deg) * 90 : 0;
+  const remain = Math.abs(target - deg) / 90;
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  cube.style.transition = reduce ? "none"
+    : `transform ${250 * remain + 80}ms cubic-bezier(0.33, 1, 0.68, 1)`;
+  setAngle(target);
+  if (reduce && target !== 0) settle();    // no transitionend will fire
+}
+
+/* ---------- the invisible reset: state A ≡ state B, swap unseen */
+cube.addEventListener("transitionend", settle);
+function settle() {
+  if (deg === 0) return;                   // was a cancel-snap
+  index += deg < 0 ? 1 : -1;               // advance the data window
+  cube.style.transition = "none";          // 1. kill animation
+  setAngle(0);                             // 2. reset rotation
+  renderWindow();                          // 3. re-assign the 3 panels
+  void cube.offsetHeight;                  // 4. force style flush
+  cube.style.transition = "";              // 5. re-arm
+}
+
+/* ---------- keyboard fallback */
+addEventListener("keydown", (e) => {
+  if (dragging) return;
+  const dir = e.key === "ArrowRight" ? -1 : e.key === "ArrowLeft" ? 1 : 0;
+  if (!dir) return;
+  const legal = dir < 0 ? index < N - 1 : index > 0;
+  if (!legal) return;
+  cube.style.transition = "transform 300ms cubic-bezier(0.33, 1, 0.68, 1)";
+  setAngle(dir * 90);   // ArrowRight: dir=-1 → θ=-90 → next
+});
+
+/* ---------- HUD: the deck's three formulas, live */
+function paintHUD() {
+  const w = W();
+  const th = (deg * Math.PI) / 180;
+  const p = (+$("cP").value) / 100;   // pivot depth as fraction of w
+  const edgeZ = (w / 2) * Math.sin(Math.abs(th)) + p * w * (Math.cos(th) - 1);
+  const scale = D / (D - edgeZ);
+  hud.innerHTML =
+    `<b>story</b> <span class="v o">${index + 1} / ${N}</span>` +
+    `<b>θ</b> <span class="v p">${deg.toFixed(1)}°</span>` +
+    `<b>seam z</b> <span class="v m">+${edgeZ.toFixed(0)}px</span>` +
+    `<b>scale</b> <span class="v m">×${scale.toFixed(3)}</span><br>` +
+    `<b>velocity</b> <span class="v b2">${vx.toFixed(2)} px/ms</span>` +
+    ((document.getElementById("cA").value = Math.round(deg)),
+     (document.getElementById("vA").textContent = deg.toFixed(0) + "\u00b0"), "") +
+    `<b>commit if</b> <span class="v">|θ|>45° or |v|>0.3</span><br>` +
+    `<span class="legend"><b class="m">seam z</b> — the seam is the vertical corner where ` +
+    `the two stories meet. At rest it lies flat ON your screen; while you drag, it swings ` +
+    `OUT in front of the screen toward you. This number is how many px it pokes out ` +
+    `(w/2·(sin|θ|+cos θ−1), peaking at 45°).<br>` +
+    `<b class="m">scale</b> — perspective magnifies whatever is closer: d/(d−z), d = ${D}px. ` +
+    `The seam grows to ~×1.06 while the outer sides shrink — that size difference is the ` +
+    `entire cube illusion.</span>`;
+}
+
+renderWindow();
+setAngle(0);
+</script>
+</body>
+</html>
